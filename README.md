@@ -18,6 +18,16 @@ Won't dedupe repeated deploy logic across your lower envs into a template
 
 So the realistic workflow:
 
+4. Sequence
+
+Convert Sonar template first (smallest, no dependencies).
+Convert PR pipeline, validate it runs and gates the branch correctly.
+Convert main pipeline stage-by-stage — one env at a time — checking each stage's parallelism/conditions against the JSON inventory before moving to the next.
+Move approvals to Environment checks (Pipelines > Environments > Checks) — this is the most commonly missed step, since classic pre-deployment approvals don't map into YAML syntax at all.
+Run classic and YAML in parallel until every lower env has deployed clean via YAML at least once before retiring classic.
+
+If you want, share the instructions.md content and the JSON export (redacted of secrets/connection strings) here and I'll draft the actual template files with you stage by stage.
+
 Run yamlizr against the full classic pipeline export → get raw YAML per stage/task. Treat this as your parts bin, not a finished pipeline.
 Manually triage the output into 3 buckets based on your instructions.md: build/test steps → PR pipeline, Sonar task block → its own pipeline (templatized), deploy stages → main pipeline.
 In the main pipeline, replace repeated per-env deploy stages with one parametrized deploy-env.yml template, called once per environment.
